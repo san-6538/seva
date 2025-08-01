@@ -26,7 +26,7 @@ const Navbar = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <Shield className="h-8 w-8 text-blue-600" />
+            < img src="/seva final.png" alt="Seva Logo" className="h-10 w-10 object-contain" />
             <span className="text-xl font-bold text-gray-900 dark:text-white">Seva</span>
           </Link>
 
