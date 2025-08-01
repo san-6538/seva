@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { Menu, X, Moon, Sun, Shield, Heart, AlertTriangle, DollarSign, Home } from 'lucide-react'
+import { Menu, X, Sun, Shield, Heart, AlertTriangle, DollarSign, Home } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { useTheme } from '../../contexts/ThemeContext'
 
@@ -65,14 +65,14 @@ const Navbar = () => {
 
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center space-x-2">
-            <Button
+            {/* <Button
               variant="ghost"
               size="icon"
               onClick={toggleTheme}
               aria-label="Toggle theme"
-            >
-              {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-            </Button>
+            > */}
+              {/* {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />} */}
+            {/* </Button> */}
             <Button
               variant="ghost"
               size="icon"

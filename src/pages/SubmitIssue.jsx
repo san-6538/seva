@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 import { Camera, MapPin, Upload, X, AlertCircle } from 'lucide-react'
@@ -26,6 +26,7 @@ const SubmitIssue = () => {
   const {
     register,
     handleSubmit,
+    control, // Added this for Controller
     formState: { errors },
     setValue,
     watch,
@@ -58,7 +59,6 @@ const SubmitIssue = () => {
         (position) => {
           const { latitude, longitude } = position.coords
           setCurrentLocation({ latitude, longitude })
-          // You would typically reverse geocode here to get address
           setValue('location', `Lat: ${latitude.toFixed(6)}, Lng: ${longitude.toFixed(6)}`)
           toast.success('Location detected successfully')
         },
@@ -104,25 +104,22 @@ const SubmitIssue = () => {
     setIsSubmitting(true)
     
     try {
-      // Here you would typically upload images first and get URLs
-      const imageUrls = images.map(img => img.preview) // Mock URLs
+      const imageUrls = images.map(img => img.preview)
       
       const complaintData = {
         ...data,
         images: imageUrls,
         coordinates: currentLocation ? [currentLocation.latitude, currentLocation.longitude] : null,
-        reportedBy: 'Current User', // This would come from auth context
+        reportedBy: 'Current User',
         status: 'pending',
         createdAt: new Date().toISOString()
       }
 
-      // Mock API call
       await new Promise(resolve => setTimeout(resolve, 2000))
       
       console.log('Complaint submitted:', complaintData)
       toast.success('Issue reported successfully!')
       
-      // Reset form
       reset()
       setImages([])
       setCurrentLocation(null)
@@ -135,19 +132,19 @@ const SubmitIssue = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12">
+    <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg">
-          <div className="px-6 py-8 border-b border-gray-200 dark:border-gray-700">
+        <div className="bg-white rounded-lg shadow-lg">
+          <div className="px-6 py-8 border-b border-gray-200">
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-red-100 dark:bg-red-900 rounded-full">
-                <AlertCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
+              <div className="p-2 bg-red-100 rounded-full">
+                <AlertCircle className="h-6 w-6 text-red-600" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                <h1 className="text-2xl font-bold text-gray-900">
                   Report an Issue
                 </h1>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-gray-600">
                   Help improve your community by reporting civic problems
                 </p>
               </div>
@@ -157,61 +154,92 @@ const SubmitIssue = () => {
           <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
             {/* Title */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Issue Title *
               </label>
               <Input
-  {...register('title')}
-  placeholder="Brief description of the issue"
-  className={`bg-gray-800 text-white placeholder:text-white placeholder:opacity-70 px-4 py-2 rounded-lg ${
-    errors.title ? 'border-red-500 border-2' : 'border-gray-600 border'
-  }`}
-/>
-
+                {...register('title')}
+                placeholder="Brief description of the issue"
+                className={errors.title ? 'border-red-500' : ''}
+              />
               {errors.title && (
                 <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
               )}
             </div>
 
-            {/* Category and Priority */}
+            {/* Category and Priority - Updated with Controller */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Category *
                 </label>
-                <Select onValueChange={(value) => setValue('category', value)}>
-                  <SelectTrigger className={errors.category ? 'border-red-500' : ''}>
-                    <SelectValue className="placeholder:text-white text-white" placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category.value} value={category.value}>
-                        {category.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Controller
+                  name="category"
+                  control={control}
+                  render={({ field }) => (
+                    <Select value={field.value || ''} onValueChange={field.onChange}>
+                      <SelectTrigger 
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 ${
+                          errors.category ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                      >
+                        <SelectValue 
+                          placeholder="Select category" 
+                          className="text-gray-900 placeholder:text-gray-500"
+                        />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border border-gray-300 rounded-md shadow-lg">
+                        {categories.map((category) => (
+                          <SelectItem 
+                            key={category.value} 
+                            value={category.value}
+                            className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-gray-900"
+                          >
+                            {category.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
                 {errors.category && (
                   <p className="mt-1 text-sm text-red-600">{errors.category.message}</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Priority *
                 </label>
-                <Select onValueChange={(value) => setValue('priority', value)}>
-                  <SelectTrigger className={errors.priority ? 'border-red-500' : ''}>
-                    <SelectValue placeholder="Select priority" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {priorities.map((priority) => (
-                      <SelectItem key={priority.value} value={priority.value}>
-                        {priority.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Controller
+                  name="priority"
+                  control={control}
+                  render={({ field }) => (
+                    <Select value={field.value || ''} onValueChange={field.onChange}>
+                      <SelectTrigger 
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 ${
+                          errors.priority ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                      >
+                        <SelectValue 
+                          placeholder="Select priority" 
+                          className="text-gray-900 placeholder:text-gray-500"
+                        />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border border-gray-300 rounded-md shadow-lg">
+                        {priorities.map((priority) => (
+                          <SelectItem 
+                            key={priority.value} 
+                            value={priority.value}
+                            className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-gray-900"
+                          >
+                            {priority.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
                 {errors.priority && (
                   <p className="mt-1 text-sm text-red-600">{errors.priority.message}</p>
                 )}
@@ -220,7 +248,7 @@ const SubmitIssue = () => {
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Detailed Description *
               </label>
               <Textarea
@@ -236,7 +264,7 @@ const SubmitIssue = () => {
 
             {/* Location */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Location *
               </label>
               <div className="flex space-x-2">
@@ -262,7 +290,7 @@ const SubmitIssue = () => {
 
             {/* Contact Info */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Contact Information *
               </label>
               <Input
@@ -277,10 +305,10 @@ const SubmitIssue = () => {
 
             {/* Image Upload */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Images (Optional)
               </label>
-              <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6">
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
                 <div className="text-center">
                   <Camera className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <div className="mb-4">
@@ -300,7 +328,7 @@ const SubmitIssue = () => {
                       className="hidden"
                     />
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-sm text-gray-600">
                     Maximum 5 images, 5MB each
                   </p>
                 </div>
@@ -308,7 +336,7 @@ const SubmitIssue = () => {
                 {/* Image Preview */}
                 {images.length > 0 && (
                   <div className="mt-6">
-                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    <h4 className="text-sm font-medium text-gray-700 mb-3">
                       Uploaded Images ({images.length}/5)
                     </h4>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -335,7 +363,7 @@ const SubmitIssue = () => {
             </div>
 
             {/* Submit Button */}
-            <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
               <Button
                 type="button"
                 variant="outline"
