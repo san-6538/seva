@@ -26,7 +26,6 @@ import DonationCard from '../../components/cards/DonationCard'
 import { sampleComplaints, sampleDonations, sampleFundraisers } from '../../data/sampleData'
 import { toast } from 'react-toastify'
 
-
 // Reusable StatCard
 const StatCard = ({ title, value, change, icon: Icon, color }) => (
   <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
@@ -149,7 +148,6 @@ const OverviewTab = ({ stats, complaints, donations }) => (
           ))}
         </div>
       </section>
-
       <section className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 flex flex-col">
         <header className="p-6 border-b border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Urgent Blood Requests</h3>
@@ -286,19 +284,26 @@ const AdminDashboard = () => {
       {/* Header */}
       <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between h-16 space-y-2 sm:space-y-0">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0 py-4 sm:py-0">
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
-              <p className="text-sm text-gray-600 dark:text-gray-400 max-w-md">Manage complaints, blood requests, and fundraisers</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 max-w-md">
+                Manage complaints, blood requests, and fundraisers
+              </p>
             </div>
-            <div className="flex items-center space-x-4 w-full sm:w-auto flex-wrap gap-2">
+            <div className="flex items-center w-full sm:w-auto gap-2 pt-2 sm:pt-0">
               {isLoading && (
                 <div className="flex items-center space-x-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   <span className="text-sm text-gray-600 dark:text-gray-400">Loading…</span>
                 </div>
               )}
-              <Button onClick={() => exportData('all')} variant="outline" disabled={isLoading} className="whitespace-nowrap">
+              <Button
+                onClick={() => exportData('all')}
+                variant="outline"
+                disabled={isLoading}
+                className="whitespace-nowrap w-full sm:w-auto"
+              >
                 <Download className="h-4 w-4 mr-2" /> Export Data
               </Button>
             </div>
@@ -428,11 +433,9 @@ const AdminDashboard = () => {
                               {c.priority.charAt(0).toUpperCase() + c.priority.slice(1)}
                             </span>
                           </div>
-
                           <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 truncate">
                             📍 {c.location}
                           </p>
-
                           <div className="flex items-center justify-between flex-wrap gap-2 mt-auto">
                             <span className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
                               c.status === 'resolved'
@@ -443,7 +446,6 @@ const AdminDashboard = () => {
                             }`}>
                               {c.status.charAt(0).toUpperCase() + c.status.slice(1)}
                             </span>
-
                             {isAdmin && (
                               <Button
                                 size="sm"
