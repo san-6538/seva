@@ -95,7 +95,22 @@ const schema = yup.object({
     .min(20, 'Description must be at least 20 characters'),
 })
 
+// Custom hook to detect mobile viewport
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 600 : false)
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 600)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  return isMobile
+}
+
 const BloodRequest = () => {
+  const isMobile = useIsMobile()
+
   const [donations, setDonations] = useState([])
   const [filteredDonations, setFilteredDonations] = useState([])
   const [showCreateForm, setShowCreateForm] = useState(false)
@@ -199,51 +214,120 @@ const BloodRequest = () => {
     normal: { bg: '#f0fdf4', text: '#16a34a', border: '#bbf7d0' }
   }
 
-  console.log('BloodRequest component rendered with', filteredDonations.length, 'donations')
+  // Styles (responsive)
+  const styles = {
+    container: {
+      minHeight: '100vh',
+      backgroundColor: '#f9fafb',
+      padding: '20px',
+      maxWidth: 1200,
+      margin: '0 auto',
+    },
+    header: {
+      backgroundColor: '#dc2626',
+      color: 'white',
+      padding: '48px 20px',
+      textAlign: 'center',
+    },
+    headerButton: {
+      backgroundColor: 'white',
+      color: '#dc2626',
+      padding: '12px 24px',
+      border: 'none',
+      borderRadius: '8px',
+      fontSize: '16px',
+      cursor: 'pointer',
+      fontWeight: '600',
+      maxWidth: isMobile ? '100%' : 200,
+      width: '100%',
+      marginTop: isMobile ? 12 : 0,
+    },
+    formGrid: {
+      display: 'grid',
+      gap: 16,
+      gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(300px, 1fr))',
+    },
+    filtersFlex: {
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: 16,
+      alignItems: 'center',
+      flexDirection: isMobile ? 'column' : 'row',
+      alignItems: isMobile ? 'stretch' : 'center',
+    },
+    inputFullWidth: {
+      width: '100%',
+      padding: '8px 12px',
+      borderRadius: '6px',
+      fontSize: 16,
+      border: '1px solid #d1d5db',
+      boxSizing: 'border-box',
+    },
+    card: {
+      border: '1px solid #e5e7eb',
+      borderRadius: '8px',
+      padding: 20,
+    },
+    contactButton: {
+      width: '100%',
+      backgroundColor: '#dc2626',
+      color: 'white',
+      padding: '10px 16px',
+      border: 'none',
+      borderRadius: '6px',
+      fontSize: 14,
+      cursor: 'pointer',
+      fontWeight: 500,
+    }
+  }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb', padding: '20px' }}>
+    <div style={styles.container}>
       {/* Header */}
-      <div style={{ backgroundColor: '#dc2626', color: 'white', padding: '48px 0', textAlign: 'center' }}>
+      <div style={styles.header}>
         <h1 style={{ fontSize: '2rem', fontWeight: 'bold', margin: 0 }}>Blood Donation</h1>
         <p style={{ fontSize: '1.2rem', margin: '16px 0' }}>
           Save lives by donating blood or requesting help for those in need
         </p>
         <button
           onClick={() => setShowCreateForm(!showCreateForm)}
-          style={{
-            backgroundColor: 'white',
-            color: '#dc2626',
-            padding: '12px 24px',
-            border: 'none',
-            borderRadius: '8px',
-            fontSize: '16px',
-            cursor: 'pointer',
-            fontWeight: '600'
-          }}
+          style={styles.headerButton}
         >
           {showCreateForm ? 'Hide' : 'Create'} Blood Request
         </button>
       </div>
 
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 16px' }}>
+      <div style={{ padding: '32px 16px' }}>
         {/* Create Request Form */}
         {showCreateForm && (
           <div style={{ backgroundColor: 'white', borderRadius: '8px', padding: '24px', marginBottom: '32px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
             <h2 style={{ fontSize: '1.5rem', fontWeight: '600', marginBottom: '16px' }}>Create Blood Request</h2>
             
-            <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
+            <form onSubmit={handleSubmit(onSubmit)} style={styles.formGrid}>
               {/* Patient Name */}
               <div>
                 <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px' }}>Patient Name *</label>
-                <input {...register('patientName')} placeholder="Full name of patient" style={{ width: '100%', padding: '8px 12px', border: errors.patientName ? '2px solid #ef4444' : '1px solid #d1d5db', borderRadius: '6px', fontSize: '16px' }} />
+                <input 
+                  {...register('patientName')} 
+                  placeholder="Full name of patient" 
+                  style={{ 
+                    ...styles.inputFullWidth, 
+                    border: errors.patientName ? '2px solid #ef4444' : '1px solid #d1d5db'
+                  }} 
+                />
                 {errors.patientName && <p style={{ color: '#ef4444', fontSize: '14px', marginTop: '4px' }}>{errors.patientName.message}</p>}
               </div>
 
               {/* Blood Type */}
               <div>
                 <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px' }}>Blood Type *</label>
-                <select {...register('bloodType')} style={{ width: '100%', padding: '8px 12px', border: errors.bloodType ? '2px solid #ef4444' : '1px solid #d1d5db', borderRadius: '6px', fontSize: '16px' }}>
+                <select 
+                  {...register('bloodType')} 
+                  style={{ 
+                    ...styles.inputFullWidth, 
+                    border: errors.bloodType ? '2px solid #ef4444' : '1px solid #d1d5db' 
+                  }}
+                >
                   <option value="">Select blood type</option>
                   {bloodTypes.map((type) => <option key={type} value={type}>{type}</option>)}
                 </select>
@@ -253,14 +337,27 @@ const BloodRequest = () => {
               {/* Hospital */}
               <div>
                 <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px' }}>Hospital *</label>
-                <input {...register('hospital')} placeholder="Hospital name" style={{ width: '100%', padding: '8px 12px', border: errors.hospital ? '2px solid #ef4444' : '1px solid #d1d5db', borderRadius: '6px', fontSize: '16px' }} />
+                <input 
+                  {...register('hospital')} 
+                  placeholder="Hospital name" 
+                  style={{ 
+                    ...styles.inputFullWidth, 
+                    border: errors.hospital ? '2px solid #ef4444' : '1px solid #d1d5db' 
+                  }} 
+                />
                 {errors.hospital && <p style={{ color: '#ef4444', fontSize: '14px', marginTop: '4px' }}>{errors.hospital.message}</p>}
               </div>
 
               {/* Urgency */}
               <div>
                 <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px' }}>Urgency Level *</label>
-                <select {...register('urgency')} style={{ width: '100%', padding: '8px 12px', border: errors.urgency ? '2px solid #ef4444' : '1px solid #d1d5db', borderRadius: '6px', fontSize: '16px' }}>
+                <select 
+                  {...register('urgency')} 
+                  style={{ 
+                    ...styles.inputFullWidth, 
+                    border: errors.urgency ? '2px solid #ef4444' : '1px solid #d1d5db' 
+                  }}
+                >
                   <option value="">Select urgency</option>
                   {urgencyLevels.map((level) => <option key={level.value} value={level.value}>{level.label}</option>)}
                 </select>
@@ -270,44 +367,113 @@ const BloodRequest = () => {
               {/* Units Needed */}
               <div>
                 <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px' }}>Units Needed *</label>
-                <input {...register('unitsNeeded')} type="number" min="1" placeholder="Number of units" style={{ width: '100%', padding: '8px 12px', border: errors.unitsNeeded ? '2px solid #ef4444' : '1px solid #d1d5db', borderRadius: '6px', fontSize: '16px' }} />
+                <input 
+                  {...register('unitsNeeded')} 
+                  type="number" 
+                  min="1" 
+                  placeholder="Number of units" 
+                  style={{ 
+                    ...styles.inputFullWidth, 
+                    border: errors.unitsNeeded ? '2px solid #ef4444' : '1px solid #d1d5db' 
+                  }} 
+                />
                 {errors.unitsNeeded && <p style={{ color: '#ef4444', fontSize: '14px', marginTop: '4px' }}>{errors.unitsNeeded.message}</p>}
               </div>
 
               {/* Contact Person */}
               <div>
                 <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px' }}>Contact Person *</label>
-                <input {...register('contactPerson')} placeholder="Contact person name" style={{ width: '100%', padding: '8px 12px', border: errors.contactPerson ? '2px solid #ef4444' : '1px solid #d1d5db', borderRadius: '6px', fontSize: '16px' }} />
+                <input 
+                  {...register('contactPerson')} 
+                  placeholder="Contact person name" 
+                  style={{ 
+                    ...styles.inputFullWidth, 
+                    border: errors.contactPerson ? '2px solid #ef4444' : '1px solid #d1d5db' 
+                  }} 
+                />
                 {errors.contactPerson && <p style={{ color: '#ef4444', fontSize: '14px', marginTop: '4px' }}>{errors.contactPerson.message}</p>}
               </div>
 
               {/* Contact Phone */}
               <div>
                 <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px' }}>Contact Phone *</label>
-                <input {...register('contactPhone')} placeholder="+91 XXXXX XXXXX" style={{ width: '100%', padding: '8px 12px', border: errors.contactPhone ? '2px solid #ef4444' : '1px solid #d1d5db', borderRadius: '6px', fontSize: '16px' }} />
+                <input 
+                  {...register('contactPhone')} 
+                  placeholder="+91 XXXXX XXXXX" 
+                  style={{ 
+                    ...styles.inputFullWidth, 
+                    border: errors.contactPhone ? '2px solid #ef4444' : '1px solid #d1d5db' 
+                  }} 
+                />
                 {errors.contactPhone && <p style={{ color: '#ef4444', fontSize: '14px', marginTop: '4px' }}>{errors.contactPhone.message}</p>}
               </div>
 
               {/* Location */}
               <div>
                 <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px' }}>Location *</label>
-                <input {...register('location')} placeholder="Hospital address or location" style={{ width: '100%', padding: '8px 12px', border: errors.location ? '2px solid #ef4444' : '1px solid #d1d5db', borderRadius: '6px', fontSize: '16px' }} />
+                <input 
+                  {...register('location')} 
+                  placeholder="Hospital address or location" 
+                  style={{ 
+                    ...styles.inputFullWidth, 
+                    border: errors.location ? '2px solid #ef4444' : '1px solid #d1d5db' 
+                  }} 
+                />
                 {errors.location && <p style={{ color: '#ef4444', fontSize: '14px', marginTop: '4px' }}>{errors.location.message}</p>}
               </div>
 
               {/* Description - Full width */}
               <div style={{ gridColumn: '1 / -1' }}>
                 <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px' }}>Description *</label>
-                <textarea {...register('description')} rows={3} placeholder="Additional details about the patient's condition and urgency (minimum 20 characters)" style={{ width: '100%', padding: '8px 12px', border: errors.description ? '2px solid #ef4444' : '1px solid #d1d5db', borderRadius: '6px', fontSize: '16px', resize: 'vertical' }} />
+                <textarea 
+                  {...register('description')} 
+                  rows={3} 
+                  placeholder="Additional details about the patient's condition and urgency (minimum 20 characters)" 
+                  style={{ 
+                    ...styles.inputFullWidth, 
+                    border: errors.description ? '2px solid #ef4444' : '1px solid #d1d5db', 
+                    resize: 'vertical' 
+                  }} 
+                />
                 {errors.description && <p style={{ color: '#ef4444', fontSize: '14px', marginTop: '4px' }}>{errors.description.message}</p>}
               </div>
 
               {/* Submit Buttons */}
-              <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '12px', marginTop: '16px' }}>
-                <button type="submit" disabled={isSubmitting} style={{ backgroundColor: isSubmitting ? '#9ca3af' : '#dc2626', color: 'white', padding: '12px 24px', border: 'none', borderRadius: '6px', fontSize: '16px', cursor: isSubmitting ? 'not-allowed' : 'pointer', fontWeight: '500' }}>
+              <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '12px', marginTop: '16px' }}>
+                <button 
+                  type="submit" 
+                  disabled={isSubmitting} 
+                  style={{ 
+                    backgroundColor: isSubmitting ? '#9ca3af' : '#dc2626', 
+                    color: 'white', 
+                    padding: '12px 24px', 
+                    border: 'none', 
+                    borderRadius: '6px', 
+                    fontSize: '16px', 
+                    cursor: isSubmitting ? 'not-allowed' : 'pointer', 
+                    fontWeight: '500',
+                    flex: 1,
+                    width: '100%'
+                  }}
+                >
                   {isSubmitting ? 'Creating...' : 'Create Request'}
                 </button>
-                <button type="button" onClick={() => setShowCreateForm(false)} disabled={isSubmitting} style={{ backgroundColor: '#6b7280', color: 'white', padding: '12px 24px', border: 'none', borderRadius: '6px', fontSize: '16px', cursor: isSubmitting ? 'not-allowed' : 'pointer' }}>
+                <button 
+                  type="button" 
+                  onClick={() => setShowCreateForm(false)} 
+                  disabled={isSubmitting} 
+                  style={{ 
+                    backgroundColor: '#6b7280', 
+                    color: 'white', 
+                    padding: '12px 24px', 
+                    border: 'none', 
+                    borderRadius: '6px', 
+                    fontSize: '16px', 
+                    cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                    flex: 1,
+                    width: '100%'
+                  }}
+                >
                   Cancel
                 </button>
               </div>
@@ -317,20 +483,28 @@ const BloodRequest = () => {
 
         {/* Filters */}
         <div style={{ backgroundColor: 'white', borderRadius: '8px', padding: '24px', marginBottom: '32px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center' }}>
+          <div style={styles.filtersFlex}>
             <input
               placeholder="Search by patient, hospital, or location..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ flex: '1', minWidth: '300px', padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '16px' }}
+              style={styles.inputFullWidth}
             />
             
-            <select value={bloodTypeFilter} onChange={(e) => setBloodTypeFilter(e.target.value)} style={{ padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '16px' }}>
+            <select 
+              value={bloodTypeFilter} 
+              onChange={(e) => setBloodTypeFilter(e.target.value)} 
+              style={styles.inputFullWidth}
+            >
               <option value="">All Blood Types</option>
               {bloodTypes.map((type) => <option key={type} value={type}>{type}</option>)}
             </select>
 
-            <select value={urgencyFilter} onChange={(e) => setUrgencyFilter(e.target.value)} style={{ padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '16px' }}>
+            <select 
+              value={urgencyFilter} 
+              onChange={(e) => setUrgencyFilter(e.target.value)} 
+              style={styles.inputFullWidth}
+            >
               <option value="">All Urgency Levels</option>
               {urgencyLevels.map((level) => <option key={level.value} value={level.value}>{level.label}</option>)}
             </select>
@@ -349,10 +523,10 @@ const BloodRequest = () => {
               <p style={{ color: '#6b7280' }}>Try adjusting your search criteria or create a new request.</p>
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '24px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(400px, 1fr))', gap: '24px' }}>
               {filteredDonations.map((donation) => (
-                <div key={donation.id} style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '20px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '16px' }}>
+                <div key={donation.id} style={styles.card}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '16px', flexWrap: 'wrap' }}>
                     <h3 style={{ fontSize: '1.2rem', fontWeight: '600', margin: 0 }}>{donation.patientName}</h3>
                     <span style={{ 
                       backgroundColor: urgencyColors[donation.urgency].bg, 
@@ -362,7 +536,10 @@ const BloodRequest = () => {
                       borderRadius: '4px', 
                       fontSize: '12px', 
                       fontWeight: '500',
-                      textTransform: 'uppercase'
+                      textTransform: 'uppercase',
+                      marginTop: isMobile ? 8 : 0,
+                      minWidth: 80,
+                      textAlign: 'center'
                     }}>
                       {donation.urgency}
                     </span>
@@ -379,17 +556,7 @@ const BloodRequest = () => {
                   
                   <button
                     onClick={() => handleContact(donation.contactPhone)}
-                    style={{
-                      width: '100%',
-                      backgroundColor: '#dc2626',
-                      color: 'white',
-                      padding: '10px 16px',
-                      border: 'none',
-                      borderRadius: '6px',
-                      fontSize: '14px',
-                      cursor: 'pointer',
-                      fontWeight: '500'
-                    }}
+                    style={styles.contactButton}
                   >
                     Contact: {donation.contactPerson} ({donation.contactPhone})
                   </button>
